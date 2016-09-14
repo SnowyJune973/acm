@@ -136,6 +136,21 @@ double Solve(int n, int src, int dst) {
       }
     }
   }
+  for(int i = 0; i < m; i++){
+	  printf("Mat %3d: ",i);
+	  for(int j = 0; j < m; j++){
+		  printf("%7.3f",mat[i][j]);
+	  }
+	  printf("%12.4f\n",mat[i][m]);
+  }
+  for(int i = 0; i < n; i++){
+	  for(int j = 0; j < n; j++){
+		  printf("Id %d %d = %d\n",i,j,MatIdx(i,j));
+	  }
+  }
+  for(int i = 0; i < m; i++){
+	  printf("R %d = %d\n",i,r[i]);
+  }
   gauss(mat, m, m);
   int st = MatIdx(src, dst);
   return mat[r[st]][m] > 1e10 ? -1.0 : mat[r[st]][m];
@@ -143,6 +158,7 @@ double Solve(int n, int src, int dst) {
 
 int main() {
   int n, m;
+  freopen("input","r",stdin);
   while (~scanf("%d%d", &n, &m)) {
     for (int i = 0; i < n; ++i) adj[i].clear();
     int a, b, src, dst;

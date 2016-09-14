@@ -9,8 +9,8 @@ const int MAXN = 420;
 const double eps = 1e-8;
 int n,m,s1,s2,fa[MAXN],deg[MAXN];
 bool graph[25][25];
-double p,dp[40000][20][20];
-double calc_E(int t){
+ double p,dp[40000][20][20];
+ double calc_E(int t){
 		for(int j = 0; j < n; j++){
 			p += t*dp[t][j][j];
 		}
@@ -53,26 +53,27 @@ int main(){
 	double prev;
 	p=0;
 	for(int t = 0; t < 39999; t++){
-		printf("T = %d\n",t);
+//		printf("T = %d\n",t);
 		for(int i = 0; i < n; i++){
 			if(getfather(i) != blk)continue;
 			for(int j = 0; j < n; j++){
 				if(deg[i] * deg[j] == 0)continue;
 				if(getfather(j) != blk)continue;
 				if(i==j)continue;
-				if(dp[t][i][j] < eps)continue;
+				if(dp[t][i][j] < 1e-12)continue;
 				for(int k = 0; k < n; k++){
 					if(!graph[i][k])continue;
 					for(int l = 0; l < n; l++){
 						if(!graph[j][l])continue;
 						dp[t+1][k][l] += dp[t][i][j] / (deg[i]*deg[j]);
+	//					printf("DP %d %d %d = %.14Lf\n",t+1,k,l,dp[t+1][k][l]);
 					}
 				}
 			}
 		}
 		calc_E(t+1);
-		printf("P = %.14f\n",p);
-		if(t>n*n && fabs(p-prev)<1e-7)break;
+		//printf("P = %.14f\n",p);
+		if(t>n*n && fabs(p-prev)<1e-8)break;
 		prev=p;
 	//	getchar();
 	}
@@ -80,7 +81,7 @@ int main(){
 	if(p>eps)printf("%.14f\n",p);
 	else puts("never meet");
 #ifndef ONLINE_JUDGE
-	fclose(stdin);
+//	fclose(stdin);
 #endif
 	return 0;
 }

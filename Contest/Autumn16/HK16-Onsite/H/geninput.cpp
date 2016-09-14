@@ -4,13 +4,11 @@ using namespace std;
 int main(){
 	ofstream fout;
 	fout.open("input");
-	fout << 20 << ' ' << 190 << endl;
+	fout << 20 << ' ' << 20 << endl;
 	for(int i = 0; i < 20; i++){
-		for(int j = i+1; j < 20; j++){
-			fout << i << ' ' << j << endl;
-		}
+			fout << i << ' ' << (i+1)%20 << endl;
 	}
-	fout << 0 << ' ' << 19 << endl;
+	fout << 0 << ' ' << 2 << endl;
 	fout.close();
 	return 0;
 }

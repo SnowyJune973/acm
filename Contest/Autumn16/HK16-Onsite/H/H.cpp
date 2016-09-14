@@ -3,14 +3,14 @@
 #include <cstdlib>
 #include <cmath>
 #include <algorithm>
-#define pos(x,y) (x*n+y)
+#define pos(x,y) (id[x][y])
 using namespace std;
 const int MAXN = 420;
 const double eps = 1e-8;
 double mat[MAXN][MAXN],vec[MAXN];
 int n,m,s1,s2,deg[25];
 bool graph[25][25];
-int fa[MAXN];
+int fa[MAXN],id[25][25];
 double dp[MAXN][25][25];
 int getfather(int x){
 	return (fa[x]==x)?x:(fa[x]=getfather(fa[x]));
@@ -26,6 +26,13 @@ void init(){
 	memset(deg,0,sizeof(deg));
 	memset(dp,0,sizeof(dp));
 	for(int i = 0; i < n; i++)fa[i] = i;
+	int tot = 0;
+	for(int i = 0; i < n; i++){
+		for(int j = i; j < n; j++){
+			id[j][i] = id[i][j] = tot;
+			tot++;
+		}
+	}	
 }
 int gauss_tpivot(int n,double a[][MAXN],double b[]){
 		int i,j,k,row,col,index[MAXN];
@@ -97,7 +104,7 @@ int main(){
 			if(getfather(i) != blk)continue;
 			for(int j = 0; j < n; j++){
 				if(getfather(j) != blk)continue;
-				if(dp[t][i][j] < eps)continue;
+				if(dp[t][i][j] < 1e-12)continue;
 				if(deg[i]*deg[j]==0)continue;
 				for(int k = 0; k < n; k++){
 					if(!graph[i][k])continue;
@@ -111,7 +118,7 @@ int main(){
 	}
 	bool ok = false;
 	for(int i = 0; i < n; i++){
-		if(dp[n*n+1][i][i] > eps){
+		if(dp[n*n+1][i][i] > 1e-12){
 			ok = true;
 			break;
 		}
@@ -125,40 +132,43 @@ int main(){
 		if(getfather(i) != blk)continue;
 		for(int j = 0; j < n; j++){
 			if(getfather(j) != blk)continue;
-			if(i==s1 && j==s2){
-				mat[pos(i,j)][pos(i,j)] = 1;
-				vec[pos(i,j)] = 0;
+			if(id[i][j] == id[s1][s2]){
+				mat[id[i][j]][id[i][j]] = 1;
+				vec[id[i][j]] = 0;
 				continue;
 			}
-			int cnt = 0;
+			bool vis = false;
 			for(int k = 0; k < n; k++){
 				if(!graph[i][k])continue;
 				for(int l = 0; l < n; l++){
 					if(!graph[j][l])continue;
 					if(k==l)continue;
-					mat[pos(i,j)][pos(k,l)] = -1, cnt++;
+					if(id[k][l] == id[i][j])continue;
+					printf("K = %d . L = %d , DegK = %d , DegL = %d\n",k,l,deg[k],deg[l]);
+					mat[id[i][j]][id[k][l]] += -1.0/deg[k]/deg[l],vis=true;
+					printf("Mat %d %d = %.4f\n",id[i][j],id[k][l],mat[id[i][j]][id[k][l]]);
 				}
 			}
-			if(cnt > 0){
-				mat[pos(i,j)][pos(i,j)] = cnt;
-				vec[pos(i,j)] = cnt;
+			if(vis){
+				mat[id[i][j]][id[i][j]] ++;
+				vec[id[i][j]] ++;
 			}
 			else{
-				mat[pos(i,j)][pos(i,j)] = 1;
-				vec[pos(i,j)] = 0;
+				mat[id[i][j]][id[i][j]] = 0;
+				vec[id[i][j]] = 0;
 			}
 		}
 	}
-	for(int i = 0; i < n*n; i++){
+	for(int i = 0; i < n*(n+1)/2; i++){
 		printf("Mat %d: ",i);
-		for(int j = 0; j < n*n; j++){
+		for(int j = 0; j < n*(n+1)/2; j++){
 			printf("%7.3f",mat[i][j]);
 		}
 		printf("%12.3f\n",vec[i]);
 	}
-	int status = gauss_tpivot(n*n,mat,vec);
+	int status = gauss_tpivot(n*(n+1)/2,mat,vec);
 		for(int i = 0; i < n; i++){
-			for(int j = 0; j < n; j++){
+			for(int j = i; j < n; j++){
 				printf("E(%d,%d) = %.5f\n",i,j,vec[pos(i,j)]);
 			}
 		}
