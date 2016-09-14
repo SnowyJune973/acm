@@ -14,8 +14,9 @@ const LL inf = 1LL<<60;
 int siz[maxn],dep[maxn],top[maxn],fa[maxn],son[maxn],w[maxn],totw;
 bool vis[maxn];
 int n,q;
-LL c[maxn],c0[maxn];
+LL c[maxn];
 vector<int> e[maxn];
+/*Segment Tree*/
 struct Segment{
 	LL sum,max,lazy;
 }T[maxn<<2];
@@ -76,15 +77,17 @@ LL queryMax(int id,int l,int r,int L,int R){
 		return -inf;
 	}
 	if(l>=L && r<=R){
-		return T[id].max;
+		return T[id].sum;
 	}
 	pushDown(id,l,r);
 	int mid = (l+r)>>1;
-	LL tmp = max(queryMax(lson(id),l,mid,L,R),queryMax(rson(id),mid+1,r,L,R));
-	return tmp;
+	return max(queryMax(lson(id),l,mid,L,R),queryMax(rson(id),mid+1,r,L,R));
 }
+/*Segment Tree End*/
 
+/*DFS1*/
 int dfs1(int x){
+	printf("X = %d\n",x);
 	vis[x] = true;
 	int sonsize = -1;
 	for(vector<int>::iterator it = e[x].begin(); it != e[x].end(); it++){
@@ -102,7 +105,9 @@ int dfs1(int x){
 	vis[x] = false;
 	return siz[x];
 }
+/*DFS2*/
 void dfs2(int x){
+	printf("X = %d\n",x);
 	vis[x] = true;
 	top[son[x]] = top[x];
 	if(son[x] != -1){
@@ -127,11 +132,12 @@ void init(){
 	fa[1] = 1;
 	dep[1] = 1;
 	top[1] = 1;
-	w[1] = 1;
-	totw = 1;
+	w[1] = 0;
+	totw = 0;
 }
 void TreeUpdate(int u,LL d){
-	update(1,1,siz[1],w[u],w[u],d-querySum(1,1,siz[1],w[u],w[u]));
+	if(u!=1)update(1,1,siz[1]-1,w[u],w[u],d-querySum(1,1,siz[1]-1,w[u],w[u]));
+	else c[1] = d;
 }		
 LL TreeQuerySumToRoot(int u,int v){
 	int f1 = top[u], f2 = top[v];
@@ -141,12 +147,15 @@ LL TreeQuerySumToRoot(int u,int v){
 			swap(f1,f2);
 			swap(u,v);
 		}
-		res += querySum(1,1,siz[1],w[f1],w[u]);
-		u = fa[f1];
+		res += querySum(1,1,siz[1]-1,max(1,w[top[f1]]),w[u]);
+		u = fa[top[f1]];
 		f1 = top[u];
 	}
-	if(dep[u] > dep[v])swap(u,v);
-	res += querySum(1,1,siz[1],w[u],w[v]);
+	if(u != v){
+		if(dep[u] > dep[v])swap(u,v);
+		res += querySum(1,1,siz[1]-1,max(1,w[top[u]]),w[v]);
+	}
+	if(u==1)res += c[1];
 	return res;
 }
 LL TreeQueryMaxToRoot(int u,int v){
@@ -157,12 +166,13 @@ LL TreeQueryMaxToRoot(int u,int v){
 			swap(f1,f2);
 			swap(u,v);
 		}
-		res = max(res, queryMax(1,1,siz[1],w[f1],w[u]));
-		u = fa[f1];
+		res = max(res, queryMax(1,1,siz[1]-1,max(1,w[top[f1]]),w[u]));
+		u = fa[top[f1]];
 		f1 = top[u];
 	}
 	if(dep[u] > dep[v])swap(u,v);
-	res = max(res, queryMax(1,1,siz[1],w[u],w[v]));
+	res = max(res, queryMax(1,1,siz[1]-1,max(1,w[u]),w[v]));
+	if(u==1)res = max(res,c[1]);
 	return res;
 }
 int main(){
@@ -178,13 +188,15 @@ int main(){
 		e[pa1].push_back(pa2);
 		e[pa2].push_back(pa1);
 	}
-	for(int i = 1; i <= n; i++)scanf("%lld",&c0[i]);
+	for(int i = 1; i <= n; i++)scanf("%lld",&c[i]);
 	dfs1(1);
 	dfs2(1);
 	for(int i = 1; i <= n; i++){
-		c[w[i]] = c0[i];
+		printf("Point %d:\n",i);
+		printf("Dep = %d , Fa = %d , Son = %d\n",dep[i],fa[i],son[i]);
+		printf("W = %d, Top = %d , Siz = %d\n",w[i],top[i],siz[i]);
 	}
-	build(1,1,n);
+	build(1,1,n-1);
 	scanf("%d",&q);
 	for(int i = 1; i <= q; i++){
 		scanf("%s %d %d\n",str,&pa1,&pa2);
